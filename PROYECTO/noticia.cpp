@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <ctime>
+#include <fstream>
 using namespace std;
 
 class persona {
@@ -85,6 +86,7 @@ public:
     int validaranio(string);
     void agregarComentario(comentario nuevo);
     autor getautor();
+    vector<comentario> getComentarios();
     void mostrarnoticia();
 };
 
@@ -266,6 +268,9 @@ void noticia::agregarComentario(comentario nuevo) {
 autor noticia::getautor() { 
     return a1; 
 }
+vector<comentario> noticia::getComentarios() {
+    return comentarios;
+}
 void noticia::mostrarnoticia() {
     cout << "****NOTICIA****" << endl;
     cout << "Titulo: " << titulo << endl;
@@ -277,7 +282,100 @@ void noticia::mostrarnoticia() {
     a1.mostrarautor(); 
 }
 
-// -------------------- MAIN --------------------
+
+void guardarAutores(vector<autor>& autores) {
+    ofstream archivo("autores.txt");//abre o crea el archivo autores.txt
+    if (archivo.is_open()) {//verifica que el archivo abrio
+        for (size_t i = 0; i < autores.size(); i++) {//recorre el vector de autores y lo escribe uno por uno
+            archivo <<"AUTOR " <<i+1<<endl<<"Dni: "<<autores[i].getdni() <<endl
+                    <<"Nombre: "<< autores[i].getnombre() <<endl
+                    <<"Medio: "<< autores[i].getmedio() << endl;
+        }
+        archivo.close();//cierra el archivo y guarda los cambios.
+        cout << "Autores guardados correctamente en autores.txt" << endl;
+    } else {
+        cout << "Error al abrir archivo autores.txt" << endl;
+    }
+}
+
+void guardarUsuarios(vector<usuario>& usuarios) {
+    ofstream archivo("usuarios.txt");
+    if (archivo.is_open()) {
+        for (size_t i = 0; i < usuarios.size(); i++) {
+            archivo <<"USUARIO "<<i+1<<endl 
+                    <<"Dni: "<< usuarios[i].getdni() <<endl
+                    <<"Nombre: "<< usuarios[i].getnombre() <<endl
+                    <<"Edad: "<< usuarios[i].getedad() << endl;
+        }
+        archivo.close();
+        cout << "Usuarios guardados correctamente en usuarios.txt" << endl;
+    } else {
+        cout << "Error al abrir archivo usuarios.txt" << endl;
+    }
+}
+
+void guardarComentarios(vector<noticia>& noticias) {
+    ofstream archivo("comentarios.txt");//abre o crea el archivo de comentarios
+    if (archivo.is_open()) {
+        for (size_t i = 0; i < noticias.size(); i++) {//recorre todas las noticias
+            vector<comentario> coments = noticias[i].getComentarios();//obtiene los comentarios de cada noticia
+            for (size_t j = 0; j < coments.size(); j++) {//recorre los comentarios de esa noticia. Copia sus datos
+                archivo << "COMENTARIO " << j+1 << endl
+                        << "Noticia: " << noticias[i].gettitulo() << endl
+                        << "Numero: " << coments[j].getnumero() << endl
+                        << "Texto: " << coments[j].gettexto() << endl
+                        << "Usuario: " << coments[j].getusuarioAutor() << endl
+                        << endl;
+            }
+        }
+        archivo.close();
+        cout << "Comentarios guardados correctamente en comentarios.txt" << endl;
+    } else {
+        cout << "Error al abrir archivo comentarios.txt" << endl;
+    }
+}
+
+
+void guardarNoticias(vector<noticia>& noticias) {
+    ofstream archivo("noticias.txt");
+    if (archivo.is_open()) {
+        for (size_t i = 0; i < noticias.size(); i++) {
+            archivo <<"NOTICIA "<<i+1<<endl<<"Titulo: "<< noticias[i].gettitulo() <<endl
+                    <<"Detalle: "<< noticias[i].getdetalle() <<endl
+                    <<"Fecha: "<< noticias[i].getdia() <<"/"
+                    << noticias[i].getmes() <<"/"
+                    << noticias[i].getanio() <<endl
+                    <<"Autor: "<< noticias[i].getautor().getnombre()<<endl;
+                    vector<comentario> coments = noticias[i].getComentarios();//obtenemos la lista de comentarios de la noticia
+                    archivo << "Comentarios:" << endl;
+                    if (coments.empty()) {//por si no hay comentarios
+                        archivo << "   (No hay comentarios)" << endl;
+                    } else {
+                        for (size_t j = 0; j < coments.size(); j++) {//muestra los comentarios uno por uno
+                            archivo << "   - Numero: " << coments[j].getnumero() << endl
+                                    << "     Texto: " << coments[j].gettexto() << endl
+                                    << "     Usuario: " << coments[j].getusuarioAutor() << endl;
+                        }
+                    }
+                    archivo << endl;
+                    
+        }
+        archivo.close();
+        cout << "Noticias guardadas correctamente en noticias.txt" << endl;
+    } else {
+        cout << "Error al abrir archivo noticias.txt" << endl;
+    }
+}
+
+void guardarTodos(vector<autor>& autores, vector<usuario>& usuarios, vector<noticia>& noticias) {//llama a cada funcion de guardado por separado
+    guardarAutores(autores);
+    guardarUsuarios(usuarios);
+    guardarNoticias(noticias);
+    guardarComentarios(noticias);
+    cout << "Todos los datos han sido guardados correctamente." << endl;
+}
+
+// MAIN 
 int main() {
     vector<autor> autores; //guarda todos los autores, usuarios y noticias registradas
     vector<usuario> usuarios;
@@ -296,6 +394,7 @@ int main() {
         cout << "6. Consultar Noticias (ultimo mes)" << endl;
         cout << "7. Mostrar una Noticia y sus comentarios" << endl;
         cout << "8. Mostrar articulos por Autor" << endl;
+        cout << "9. Guardar todos los datos en archivos" << endl;
         cout << "0. Salir" << endl;
         cout << "Seleccione una opcion: ";
         getline(cin, entrada); //para que el sistema no se rompa, si se ingresa un string, el sistema lo agarra y convierte en int.
@@ -308,7 +407,7 @@ int main() {
         }
 
         switch (opcion) {
-        case 1: { // REGISTRO DE AUTOR
+        case 1: {
             persona p;
             autor a;
             string dniStr, nombre, medio;
@@ -338,7 +437,7 @@ int main() {
             break;
         }
 
-        case 2: { // REGISTRO DE USUARIO
+        case 2: {
             usuario u;
             persona p;
             string dniStr, nombre, edadStr;
@@ -370,18 +469,18 @@ int main() {
             u.setedad(stoi(edadStr));
 
             usuarios.push_back(u);
-            cout << "Usuario registrado correctamente.";
+            cout << "Usuario registrado correctamente.\n";
             break;
         }
-        case 3: { // PUBLICAR NOTICIA
+        case 3: {
             if (autores.empty()) { 
-                cout << "No hay autores registrados. Debe registrar un autor primero."; 
-                break; //verifica que haya al menos un autor
+                cout << "No hay autores registrados. Debe registrar un autor primero.\n"; 
+                break;  //verifica que haya al menos un autor
             }
             cout << "Seleccione el autor que publicara la noticia:" << endl;
             for (size_t i = 0; i < autores.size(); i++) {
-                cout << i + 1 << ". " << autores[i].getnombre() << endl;//enlista los autores registrados hasta el momento
-            }
+                cout << i + 1 << ". " << autores[i].getnombre() << endl;
+            } //enlista los autores registrados hasta el momento
             string autorStr;
             int autorIdx = -1;
             do {
@@ -398,9 +497,8 @@ int main() {
             } while (autorIdx < 0 || autorIdx >= (int)autores.size());
 
             autor autorSeleccionado = autores[autorIdx];
-            // FIN: SELECCIÓN DE AUTOR 
 
-            noticia n_para_validar; // Objeto temporal solo para usar los métodos de validación
+            noticia n_para_validar;
             string titulo, detalle, diaStr, mesStr, anioStr;
             int dValido = 0, mValido = 0, aValido = 0;
 
@@ -412,7 +510,7 @@ int main() {
             // Usamos para llamar a los métodos de validación
             do { 
                 cout << "Ingrese dia: "; getline(cin, diaStr); dValido = n_para_validar.validardia(diaStr); 
-            } while (!dValido);//repite la pregunta cada vez que el trycatch no funciona.
+            } while (!dValido); //repite la pregunta cada vez que el trycatch no funciona.
             do { 
                 cout << "Ingrese mes: "; getline(cin, mesStr); mValido = n_para_validar.validarmes(mesStr); 
             } while (!mValido);
@@ -429,22 +527,22 @@ int main() {
                 autorSeleccionado
             );
 
-            noticias.push_back(n_final);//guarda la nueva noticia en el vector.
+            noticias.push_back(n_final); //guarda la nueva noticia en el vector.
             autorSeleccionado.publicarnoticia();
             
-            cout << "Noticia publicada correctamente."<<endl;
+            cout << "Noticia publicada correctamente.\n";
             break;
         }
 
-        case 4: { // REGISTRAR COMENTARIO
+        case 4: {
             if (usuarios.empty() || noticias.empty()) {
-            cout << "Debe haber usuarios y noticias registradas.";
-            break; //verifica que haya usuarios y noticias.
+            cout << "Debe haber usuarios y noticias registradas.\n";
+            break; 
             }
 
-            cout << "Seleccione numero de noticia para comentar:";
+            cout << "Seleccione numero de noticia para comentar:\n";
             for (size_t i = 0; i < noticias.size(); i++) {
-                cout << i + 1 << ". " << noticias[i].gettitulo() << endl;//hace un indice de las noticias que hay registradas
+                cout << i + 1 << ". " << noticias[i].gettitulo() << endl;
             }
         
             string opcionNoticiaStr;
@@ -468,9 +566,10 @@ int main() {
             do {
                 getline(cin, opcionUsuarioStr);
                 try { 
-                    indiceUsuario = stoi(opcionUsuarioStr) - 1; } 
-                    catch (...) { indiceUsuario = -1; 
-                    }
+                    indiceUsuario = stoi(opcionUsuarioStr) - 1; 
+                } catch (...) { 
+                    indiceUsuario = -1; 
+                }
             } while (indiceUsuario < 0 || indiceUsuario >= (int)usuarios.size());
         
             comentario c;
@@ -492,19 +591,19 @@ int main() {
         
             c.setnumero(stoi(numeroStr));
             c.settexto(texto);
-            c.setusuarioAutor(usuarios[indiceUsuario].getnombre()); // Se crea el comentario y se asocia al nombre del usuario
+            c.setusuarioAutor(usuarios[indiceUsuario].getnombre());
         
-            noticias[indiceNoticia].agregarComentario(c); //Se guarda el comentario dentro del vector de comentarios de la noticia
+            noticias[indiceNoticia].agregarComentario(c);
         
-            cout << "Comentario agregado correctamente por " << usuarios[indiceUsuario].getnombre() <<endl;
+            cout << "Comentario agregado correctamente por " << usuarios[indiceUsuario].getnombre() << "\n";
             break;
         }        
 
 
-        case 5: { // CONSULTAR NOTICIAS POR AÑO
+        case 5: {
             if (noticias.empty()) { 
-                cout << "No hay noticias cargadas."; 
-                break; //verifica que haya noticias
+                cout << "No hay noticias cargadas.\n"; 
+                break;
             }
 
             string anioStr;
@@ -514,35 +613,39 @@ int main() {
                 cout << "Ingrese el anio a consultar: ";
                 getline(cin, anioStr);
                 aValido = temp.validaranio(anioStr);
-            } while (!aValido);//valida el año y vuelve a preguntar si es invalido
+            } while (!aValido);
 
             cout << "Noticias del anio " << anioStr << ":\n";
             for (auto &n : noticias)
                 if (n.getanio() == stoi(anioStr))
                     n.mostrarnoticia();
-            break;//Recorre todas las noticias y muestra solo las que coinciden con el año ingresado
+            break;
         }
 
-        case 6: { // CONSULTAR NOTICIAS DEL ÚLTIMO MES
-            if (noticias.empty()) { cout << "No hay noticias cargadas."; break; }
+        case 6: {
+            if (noticias.empty()) { 
+                cout << "No hay noticias cargadas.\n"; 
+                break; 
+            }
 
             time_t t = time(0);
             tm* now = localtime(&t);
             int mesActual = now->tm_mon + 1;
-            int anioActual = now->tm_year + 1900; //Obtiene la fecha actual del sistema.
+            int anioActual = now->tm_year + 1900;
 
             cout << "Noticias del ultimo mes (" << mesActual << "/" << anioActual << "):\n";
             for (auto &n : noticias)
                 if (n.getmes() == mesActual && n.getanio() == anioActual)
                     n.mostrarnoticia();
-            break; //Muestra solo las noticias publicadas en ese mes y año
+            break;
         }
 
-        case 7: { // MOSTRAR UNA NOTICIA Y SUS COMENTARIOS
-            if (noticias.empty()) { cout << "No hay noticias cargadas."<<endl; 
+        case 7: {
+            if (noticias.empty()) { 
+                cout << "No hay noticias cargadas.\n"; 
                 break; 
             }
-            cout << "Seleccione numero de noticia a mostrar:"<<endl;
+            cout << "Seleccione numero de noticia a mostrar:\n";
             for (size_t i = 0; i < noticias.size(); i++)
                 cout << i + 1 << ". " << noticias[i].gettitulo() << endl;
 
@@ -561,7 +664,7 @@ int main() {
             break;
         }
 
-        case 8: { // ARTÍCULOS POR AUTOR (corregido)
+        case 8: {
             if (autores.empty() || noticias.empty()) {
                 cout << "No hay autores o noticias cargadas.\n";
                 break;
@@ -586,24 +689,28 @@ int main() {
         
             cout << "\nArticulos publicados por " << nombreAutor << ":\n";
             for (auto &n : noticias) {
-                if (n.getautor().getnombre() == nombreAutor) { //usa el getter nuevo
+                if (n.getautor().getnombre() == nombreAutor) {
                     n.mostrarnoticia();
                     encontrado = true;
                 }
             }
         
             if (!encontrado)
-                cout << "Este autor no tiene noticias publicadas."<<endl;
+                cout << "Este autor no tiene noticias publicadas.\n";
         
             break;
         }
 
+        case 9: {
+            guardarTodos(autores, usuarios, noticias);
+            break;
+        }
 
         case 0:
-            cout << "Saliendo del sistema..."<<endl;
+            cout << "Saliendo del sistema...\n";
             break;
         default:
-            cout << "Opción no válida."<<endl;
+            cout << "Opción no válida.\n";
         }
         } while (opcion != 0);
 
